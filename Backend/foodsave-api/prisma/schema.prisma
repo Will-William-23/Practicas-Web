@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  
+  products     Product[]     
+  reservations Reservation[] 
+}
+
+enum Role {
+  STUDENT
+  RESTAURANT
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  originalPrice Float
+  discountPrice Float
+  stock         Int
+  expireTime    DateTime 
+  createdAt     DateTime @default(now())
+  
+  restaurantId  Int
+  restaurant    User     @relation(fields: [restaurantId], references: [id])
+  
+  reservations  Reservation[]
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique 
+  status    Status   @default(PENDING)
+  createdAt DateTime @default(now())
+  
+  studentId Int
+  student   User     @relation(fields: [studentId], references: [id])
+  
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+enum Status {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
